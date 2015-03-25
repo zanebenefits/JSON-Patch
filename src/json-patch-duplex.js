@@ -475,7 +475,7 @@ var jsonpatch;
     jsonpatch.generate = generate;
 
     // Dirty check if obj is different from mirror, generate patches and update mirror
-    function _generate(mirror, obj, patches, path) {
+    function _generate(mirror, obj, patches, path, useDashForArrayAdd) {
         var newKeys = _objectKeys(obj);
         var oldKeys = _objectKeys(mirror);
         var changed = false;
@@ -487,7 +487,7 @@ var jsonpatch;
             if (obj.hasOwnProperty(key)) {
                 var newVal = obj[key];
                 if (typeof oldVal == "object" && oldVal != null && typeof newVal == "object" && newVal != null) {
-                    _generate(oldVal, newVal, patches, path + "/" + escapePathComponent(key));
+                    _generate(oldVal, newVal, patches, path + "/" + escapePathComponent(key), useDashForArrayAdd);
                 } else {
                     if (oldVal != newVal) {
                         changed = true;
@@ -507,7 +507,9 @@ var jsonpatch;
         for (var t = 0; t < newKeys.length; t++) {
             var key = newKeys[t];
             if (!mirror.hasOwnProperty(key)) {
-                patches.push({ op: "add", path: path + "/" + escapePathComponent(key), value: deepClone(obj[key]) });
+                
+                var escapedKey = useDashForArrayAdd && _isArray(obj) ? "-" : escapePathComponent(key);               
+                patches.push({ op: "add", path: path + "/" + escapedKey, value: deepClone(obj[key]) });
             }
         }
     }
@@ -605,9 +607,9 @@ var jsonpatch;
     }
     jsonpatch.apply = apply;
 
-    function compare(tree1, tree2) {
+    function compare(tree1, tree2, useDashForArrayAdd) {
         var patches = [];
-        _generate(tree1, tree2, patches, '');
+        _generate(tree1, tree2, patches, '', !!useDashForArrayAdd);
         return patches;
     }
     jsonpatch.compare = compare;

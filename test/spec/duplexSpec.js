@@ -659,6 +659,25 @@ describe("duplex", function () {
       ]);
     });
 
+    it('should return an add with the index for adding an item to an array', function () {
+      var objA = {user: {firstName: "Albert", phoneNumbers: ["123456"]}};
+      var objB = {user: {firstName: "Albert", phoneNumbers: ["123456", "456789"]}};
+
+      expect(jsonpatch.compare(objA, objB)).toEqual([
+        {op: "add", path: "/user/phoneNumbers/1", value: "456789"}
+      ]);
+    });
+
+    it('should return an add with a dash for adding an item to an array', function () {
+      var useDashForArrayAddition = true;
+      var objA = {user: {firstName: "Albert", phoneNumbers: ["123456"]}};
+      var objB = {user: {firstName: "Albert", phoneNumbers: ["123456", "456789"]}};
+
+      expect(jsonpatch.compare(objA, objB, useDashForArrayAddition)).toEqual([
+        {op: "add", path: "/user/phoneNumbers/-", value: "456789"}
+      ]);
+    });
+
     it('should return a remove for a property that does not exist in the second obj', function () {
       var objA = {user: {firstName: "Albert", lastName: "Einstein"}};
       var objB = {user: {firstName: "Albert"}};
